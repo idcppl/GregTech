@@ -2,6 +2,8 @@ package gregtech.api.recipes;
 
 import gregtech.api.items.metaitem.MetaItem;
 import gregtech.api.recipes.Recipe.ChanceEntry;
+import gregtech.api.recipes.ingredients.fluid.AmountFluidIngredient;
+import gregtech.api.recipes.ingredients.fluid.FluidIngredient;
 import gregtech.api.unification.material.type.FluidMaterial;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.type.Material;
@@ -33,7 +35,7 @@ public abstract class RecipeBuilder<R extends RecipeBuilder<R>> {
     protected NonNullList<ItemStack> outputs;
     protected List<ChanceEntry> chancedOutputs;
 
-    protected List<FluidStack> fluidInputs;
+    protected List<AmountFluidIngredient> fluidInputs;
     protected List<FluidStack> fluidOutputs;
 
     protected int duration, EUt;
@@ -58,7 +60,7 @@ public abstract class RecipeBuilder<R extends RecipeBuilder<R>> {
         this.outputs.addAll(GTUtility.copyStackList(recipe.getOutputs()));
         this.chancedOutputs = new ArrayList<>(recipe.getChancedOutputs());
 
-        this.fluidInputs = GTUtility.copyFluidList(recipe.getFluidInputs());
+        this.fluidInputs = GTUtility.copyFluidIngredientList(recipe.getFluidIngredientInputs());
         this.fluidOutputs = GTUtility.copyFluidList(recipe.getFluidOutputs());
 
         this.duration = recipe.getDuration();
@@ -75,7 +77,7 @@ public abstract class RecipeBuilder<R extends RecipeBuilder<R>> {
         this.outputs.addAll(GTUtility.copyStackList(recipeBuilder.getOutputs()));
         this.chancedOutputs = new ArrayList<>(recipeBuilder.chancedOutputs);
 
-        this.fluidInputs = GTUtility.copyFluidList(recipeBuilder.getFluidInputs());
+        this.fluidInputs = GTUtility.copyFluidIngredientList(recipeBuilder.getFluidIngredientInputs());
         this.fluidOutputs = GTUtility.copyFluidList(recipeBuilder.getFluidOutputs());
         this.duration = recipeBuilder.duration;
         this.EUt = recipeBuilder.EUt;
@@ -231,10 +233,18 @@ public abstract class RecipeBuilder<R extends RecipeBuilder<R>> {
     }
 
     public R fluidInputs(FluidStack... inputs) {
+        List<AmountFluidIngredient> fluidIngredients = new ArrayList<>();
+        for(FluidStack fluidStack : inputs) {
+            fluidIngredients.add(new AmountFluidIngredient(new FluidIngredient(fluidStack), fluidStack.amount));
+        }
+        return fluidInputs(fluidIngredients);
+    }
+
+    public R fluidInputs(AmountFluidIngredient... inputs) {
         return fluidInputs(Arrays.asList(inputs));
     }
 
-    public R fluidInputs(Collection<FluidStack> inputs) {
+    public R fluidInputs(Collection<AmountFluidIngredient> inputs) {
         if (inputs.contains(null)) {
             GTLog.logger.error("Fluid input cannot contain null FluidStacks. Inputs: {}", inputs);
             GTLog.logger.error("Stacktrace:", new IllegalArgumentException());
@@ -255,6 +265,7 @@ public abstract class RecipeBuilder<R extends RecipeBuilder<R>> {
         this.fluidOutputs.addAll(outputs);
         return (R) this;
     }
+
 
     public R chancedOutput(ItemStack stack, int chance, int tierChanceBoost) {
         if (stack == null || stack.isEmpty()) {
@@ -334,8 +345,17 @@ public abstract class RecipeBuilder<R extends RecipeBuilder<R>> {
         return chancedOutputs;
     }
 
-    public List<FluidStack> getFluidInputs() {
+    public List<AmountFluidIngredient> getFluidIngredientInputs() {
         return fluidInputs;
+    }
+
+    @Deprecated
+    public List<FluidStack> getFluidInputs() {
+        List<FluidStack> fluids = new ArrayList<>();
+        for(AmountFluidIngredient ingredients : fluidInputs) {
+            fluids.addAll(Arrays.asList(ingredients.getIngredient().getMatchingStacks()));
+        }
+        return fluids;
     }
 
     public List<FluidStack> getFluidOutputs() {

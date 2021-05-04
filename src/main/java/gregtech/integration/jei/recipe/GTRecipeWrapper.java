@@ -4,6 +4,7 @@ import gregtech.api.recipes.CountableIngredient;
 import gregtech.api.recipes.Recipe;
 import gregtech.api.recipes.Recipe.ChanceEntry;
 import gregtech.api.recipes.RecipeMap;
+import gregtech.api.recipes.ingredients.fluid.AmountFluidIngredient;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.util.ItemStackHashStrategy;
 import gregtech.integration.jei.utils.JEIHelpers;
@@ -64,17 +65,29 @@ public class GTRecipeWrapper implements IRecipeWrapper {
             ingredients.setInputLists(VanillaTypes.ITEM, matchingInputs);
         }
 
-        if (!recipe.getFluidInputs().isEmpty()) {
-            List<FluidStack> recipeInputs = recipe.getFluidInputs()
-                .stream().map(FluidStack::copy)
-                .collect(Collectors.toList());
-            recipeInputs.forEach(stack -> {
-                if (stack.amount == 0) {
-                    notConsumedFluidInput.add(stack);
-                    stack.amount = 1;
-                }
-            });
-            ingredients.setInputs(VanillaTypes.FLUID, recipeInputs);
+        if (!recipe.getFluidIngredientInputs().isEmpty()) {
+            List<AmountFluidIngredient> recipeInputs = recipe.getFluidIngredientInputs();
+            List<List<FluidStack>> matchingInputs = new ArrayList<>(recipeInputs.size());
+            for (AmountFluidIngredient ingredient : recipeInputs) {
+                List<FluidStack> ingredientValues = Arrays.stream(ingredient.getIngredient().getMatchingStacks())
+                        .map(FluidStack::copy)
+                        .collect(Collectors.toList());
+                ingredientValues.forEach(stack -> {
+                    if(ingredient.isDynamic()) {
+                        if(stack.amount == 0) {
+                            notConsumedFluidInput.add(stack);
+                            stack.amount = 0;
+                        }
+                    } else {
+                        if (ingredient.getAmount() == 0) {
+                            notConsumedFluidInput.add(stack);
+                            stack.amount = 1;
+                        } else stack.amount = ingredient.getAmount();
+                    }
+                });
+                matchingInputs.add(ingredientValues);
+            }
+            ingredients.setInputLists(VanillaTypes.FLUID, matchingInputs);
         }
 
         if (!recipe.getOutputs().isEmpty() || !recipe.getChancedOutputs().isEmpty()) {

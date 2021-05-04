@@ -11,6 +11,7 @@ import gregtech.api.gui.impl.ModularUIContainer;
 import gregtech.api.items.IToolItem;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.MetaTileEntityHolder;
+import gregtech.api.recipes.ingredients.fluid.AmountFluidIngredient;
 import gregtech.common.ConfigHolder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRedstoneWire;
@@ -608,6 +609,12 @@ public class GTUtility {
 
     public static List<FluidStack> copyFluidList(List<FluidStack> fluidStacks) {
         FluidStack[] stacks = new FluidStack[fluidStacks.size()];
+        for (int i = 0; i < fluidStacks.size(); i++) stacks[i] = fluidStacks.get(i).copy();
+        return Lists.newArrayList(stacks);
+    }
+
+    public static List<AmountFluidIngredient> copyFluidIngredientList(List<AmountFluidIngredient> fluidStacks) {
+        AmountFluidIngredient[] stacks = new AmountFluidIngredient[fluidStacks.size()];
         for (int i = 0; i < fluidStacks.size(); i++) stacks[i] = fluidStacks.get(i).copy();
         return Lists.newArrayList(stacks);
     }

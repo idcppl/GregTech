@@ -7,10 +7,20 @@ public class AmountFluidIngredient {
 
     private FluidIngredient ingredient;
     private int amount;
+    private boolean dynamicAmount;
 
     public AmountFluidIngredient(FluidIngredient ingredient, int amount) {
+        this(ingredient, amount, false);
+    }
+
+    public AmountFluidIngredient(FluidIngredient ingredient, boolean dynamicAmount) {
+        this(ingredient, 1, dynamicAmount);
+    }
+
+    public AmountFluidIngredient(FluidIngredient ingredient, int amount, boolean dynamicAmount) {
         this.ingredient = ingredient;
         this.amount = amount;
+        this.dynamicAmount = dynamicAmount;
     }
 
     public FluidIngredient getIngredient() {
@@ -19,6 +29,14 @@ public class AmountFluidIngredient {
 
     public int getAmount() {
         return amount;
+    }
+
+    public AmountFluidIngredient copy() {
+        return new AmountFluidIngredient(ingredient, amount);
+    }
+
+    public boolean isDynamic() {
+        return dynamicAmount;
     }
 
     @Override

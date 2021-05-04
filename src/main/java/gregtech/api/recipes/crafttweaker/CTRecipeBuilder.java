@@ -8,6 +8,8 @@ import crafttweaker.api.minecraft.CraftTweakerMC;
 import gregtech.api.recipes.CountableIngredient;
 import gregtech.api.recipes.RecipeBuilder;
 import gregtech.api.recipes.ingredients.IntCircuitIngredient;
+import gregtech.api.recipes.ingredients.fluid.AmountFluidIngredient;
+import gregtech.api.recipes.ingredients.fluid.FluidIngredient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import stanhebben.zenscript.annotations.ZenClass;
@@ -70,6 +72,7 @@ public class CTRecipeBuilder {
     public CTRecipeBuilder fluidInputs(ILiquidStack... ingredients) {
         this.backingBuilder.fluidInputs(Arrays.stream(ingredients)
             .map(CraftTweakerMC::getLiquidStack)
+            .map(stack -> new AmountFluidIngredient(new FluidIngredient(stack), stack.amount))
             .collect(Collectors.toList()));
         return this;
     }

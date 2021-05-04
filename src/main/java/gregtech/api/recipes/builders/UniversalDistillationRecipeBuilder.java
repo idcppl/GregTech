@@ -5,6 +5,7 @@ import gregtech.api.recipes.Recipe;
 import gregtech.api.recipes.RecipeBuilder;
 import gregtech.api.recipes.RecipeMap;
 import gregtech.api.recipes.RecipeMaps;
+import gregtech.api.recipes.ingredients.fluid.AmountFluidIngredient;
 import gregtech.api.util.ValidationResult;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -29,7 +30,7 @@ public class UniversalDistillationRecipeBuilder extends RecipeBuilder<UniversalD
     @Override
     public void buildAndRegister() {
         IntCircuitRecipeBuilder builder = RecipeMaps.DISTILLERY_RECIPES.recipeBuilder()
-            .fluidInputs(this.fluidInputs.toArray(new FluidStack[0]))
+            .fluidInputs(this.fluidInputs.toArray(new AmountFluidIngredient[0]))
             .duration(this.duration * 2)
             .EUt(this.EUt / 4);
 

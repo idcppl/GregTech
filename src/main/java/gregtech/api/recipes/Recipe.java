@@ -3,6 +3,7 @@ package gregtech.api.recipes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import gregtech.api.capability.IMultipleTankHandler;
+import gregtech.api.recipes.ingredients.fluid.AmountFluidIngredient;
 import gregtech.api.util.GTUtility;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -43,7 +44,7 @@ public class Recipe {
      * A chance of 10000 equals 100%
      */
     private final List<ChanceEntry> chancedOutputs;
-    private final List<FluidStack> fluidInputs;
+    private final List<AmountFluidIngredient> fluidInputs;
     private final List<FluidStack> fluidOutputs;
 
     private final int duration;
@@ -61,7 +62,7 @@ public class Recipe {
     private final Map<String, Object> recipeProperties;
 
     public Recipe(List<CountableIngredient> inputs, List<ItemStack> outputs, List<ChanceEntry> chancedOutputs,
-                  List<FluidStack> fluidInputs, List<FluidStack> fluidOutputs,
+                  List<AmountFluidIngredient> fluidInputs, List<FluidStack> fluidOutputs,
                   Map<String, Object> recipeProperties, int duration, int EUt, boolean hidden) {
         this.recipeProperties = ImmutableMap.copyOf(recipeProperties);
         this.inputs = NonNullList.create();
@@ -188,8 +189,8 @@ public class Recipe {
             fluidAmountInTank[i] = fluidInTank == null ? 0 : fluidInTank.amount;
         }
 
-        for (FluidStack fluid : this.fluidInputs) {
-            int fluidAmount = fluid.amount;
+        for (AmountFluidIngredient fluid : this.fluidInputs) {
+            int fluidAmount = fluid.getAmount();
             boolean isNotConsumed = false;
             if (fluidAmount == 0) {
                 fluidAmount = 1;
@@ -197,7 +198,7 @@ public class Recipe {
             }
             for (int i = 0; i < fluidInputs.size(); i++) {
                 FluidStack tankFluid = fluidInputs.get(i);
-                if (tankFluid == null || !tankFluid.isFluidEqual(fluid))
+                if (tankFluid == null || !fluid.getIngredient().test(tankFluid))
                     continue;
                 int fluidAmountToConsume = Math.min(fluidAmountInTank[i], fluidAmount);
                 fluidAmount -= fluidAmountToConsume;
@@ -252,15 +253,21 @@ public class Recipe {
         return chancedOutputs;
     }
 
-    public List<FluidStack> getFluidInputs() {
+    public List<AmountFluidIngredient> getFluidIngredientInputs() {
         return fluidInputs;
     }
 
+    public List<FluidStack> getFluidInputs() {
+        List<FluidStack> fluids = new ArrayList<>();
+        for(AmountFluidIngredient ingredients : fluidInputs) {
+            fluids.addAll(Arrays.asList(ingredients.getIngredient().getMatchingStacks()));
+        }
+        return fluids;
+    }
+
     public boolean hasInputFluid(FluidStack fluid) {
-        for (FluidStack fluidStack : fluidInputs) {
-            if (fluidStack.isFluidEqual(fluid)) {
-                return true;
-            }
+        for (AmountFluidIngredient fluidStack : fluidInputs) {
+            return fluidStack.getIngredient().test(fluid);
         }
         return false;
     }
